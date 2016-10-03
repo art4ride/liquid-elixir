@@ -3,4 +3,5 @@
 /_build
 /.idea
 /bench/snapshots
+/bench/Gemfile.lock
 erl_crash.dump

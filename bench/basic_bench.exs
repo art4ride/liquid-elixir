@@ -3,6 +3,7 @@ defmodule BasicBench do
   alias Liquid.{Template, Tag}
 
   @list Enum.to_list(1..1000)
+  @short_list Enum.to_list(1..100)
 
   defmodule MyFilter do
     def meaning_of_life(_), do: 42
@@ -28,6 +29,12 @@ defmodule BasicBench do
     end
   end
 
+  defmodule BenchFileSystem do
+      def read_template_file(_root, _template_path, _context) do
+        File.read "bench/dummy-template.liquid"
+      end
+  end
+
   setup_all do
     Application.put_env(:liquid, :extra_filter_modules, [MyFilter, MyFilterTwo])
     Liquid.start
@@ -49,4 +56,13 @@ defmodule BasicBench do
     { :ok, _rendered, _ } = Template.render(t, assigns)
   end
 
+  bench "load file" do
+    f = BenchFileSystem.read_template_file("root","file",%{})
+  end
+
+  bench "dummy-world template rendering" do
+    markup = "{% include 'dummy-template' %}"
+    context = %Liquid.Context{assigns: %{"array" => @short_list}, registers: %{file_system: { BenchFileSystem, "" }}}
+    markup |> Template.parse |> Template.render(context) |> elem(1)
+  end
 end
